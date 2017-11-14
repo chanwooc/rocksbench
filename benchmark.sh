@@ -59,6 +59,7 @@ num_writes=${NUM_WRITES:--1}
 key_size=${KEY_SIZE:-20}
 value_size=${VALUE_SIZE:-400}
 block_size=${BLOCK_SIZE:-8192}
+bloom_bits=${BLOOM_BITS:-10}
 
 const_params="
   --db=$DB_DIR \
@@ -96,7 +97,7 @@ const_params="
   --histogram=1 \
   \
   --memtablerep=skip_list \
-  --bloom_bits=10 \
+  --bloom_bits=$bloom_bits \
   --open_files=-1"
 
 l0_config="
