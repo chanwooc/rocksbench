@@ -190,7 +190,7 @@ function run_bulkload {
        --disable_wal=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/benchmark_bulkload_fillrandom.log"
-  echo $cmd | tee $output_dir/benchmark_bulkload_fillrandom.log
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_fillrandom.log
   eval $cmd
   summarize_result $output_dir/benchmark_bulkload_fillrandom.log bulkload fillrandom
   echo "Compacting..."
@@ -201,7 +201,7 @@ function run_bulkload {
        $params_w \
        --threads=1 \
        2>&1 | tee -a $output_dir/benchmark_bulkload_compact.log"
-  echo $cmd | tee $output_dir/benchmark_bulkload_compact.log
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_compact.log
   eval $cmd
 }
 
@@ -218,7 +218,7 @@ function run_bulkload_unique {
        --disable_wal=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/benchmark_bulkload_filluniquerandom.log"
-  echo $cmd | tee $output_dir/benchmark_bulkload_filluniquerandom.log
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_filluniquerandom.log
   eval $cmd
   summarize_result $output_dir/benchmark_bulkload_filluniquerandom.log bulkload filluniquerandom
   echo "Compacting..."
@@ -229,7 +229,7 @@ function run_bulkload_unique {
        $params_w \
        --threads=1 \
        2>&1 | tee -a $output_dir/benchmark_bulkload_compact.log"
-  echo $cmd | tee $output_dir/benchmark_bulkload_compact.log
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_compact.log
   eval $cmd
 }
 
@@ -352,7 +352,7 @@ function run_fillseq {
        --disable_wal=$1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $log_file_name"
-  echo $cmd | tee $log_file_name
+  echo $cmd | tee -a $log_file_name
   eval $cmd
 
   # The constant "fillseq" which we pass to db_bench is the benchmark name.
@@ -401,7 +401,7 @@ function run_fillrandom {
        --seed=$( date +%s ) \
        --disable_wal=1 \
        2>&1 | tee -a $output_dir/benchmark_fillrandom.log"
-  echo $cmd | tee $output_dir/benchmark_fillrandom.log
+  echo $cmd | tee -a $output_dir/benchmark_fillrandom.log
   eval $cmd
   summarize_result $output_dir/benchmark_fillrandom.log fillrandom fillrandom
 }
@@ -416,7 +416,7 @@ function run_readrandom {
 	   --reads=$num_reads \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/${out_name}"
-  echo $cmd | tee $output_dir/${out_name}
+  echo $cmd | tee -a $output_dir/${out_name}
   eval $cmd
   summarize_result $output_dir/${out_name} readrandom.t${num_threads} readrandom
 }
@@ -433,7 +433,7 @@ function run_readrandomwriterandom {
        --disable_wal=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/${out_name}"
-  echo $cmd | tee $output_dir/${out_name}
+  echo $cmd | tee -a $output_dir/${out_name}
   eval $cmd
   summarize_result $output_dir/${out_name} readrandomwriterandom.t${num_threads} readrandomwriterandom
 }
@@ -449,7 +449,7 @@ function run_readrandom_direct {
 	   --use_direct_reads=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/${out_name}"
-  echo $cmd | tee $output_dir/${out_name}
+  echo $cmd | tee -a $output_dir/${out_name}
   eval $cmd
   summarize_result $output_dir/${out_name} readrandom_direct.t${num_threads} readrandom
 }
@@ -464,7 +464,7 @@ function run_readseq {
 	   --reads=$num_reads \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/${out_name}"
-  echo $cmd | tee $output_dir/${out_name}
+  echo $cmd | tee -a $output_dir/${out_name}
   eval $cmd
   summarize_result $output_dir/${out_name} readseq.t${num_threads} readseq
 }
@@ -480,7 +480,7 @@ function run_readseq_direct {
 	   --use_direct_reads=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/${out_name}"
-  echo $cmd | tee $output_dir/${out_name}
+  echo $cmd | tee -a $output_dir/${out_name}
   eval $cmd
   summarize_result $output_dir/${out_name} readseq_direct.t${num_threads} readseq
 }
@@ -499,7 +499,7 @@ function run_readwhile {
        --disable_wal=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/${out_name}"
-  echo $cmd | tee $output_dir/${out_name}
+  echo $cmd | tee -a $output_dir/${out_name}
   eval $cmd
   summarize_result $output_dir/${out_name} readwhile${operation}.t${num_threads} readwhile${operation}
 }
