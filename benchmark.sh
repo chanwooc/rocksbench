@@ -60,6 +60,7 @@ key_size=${KEY_SIZE:-20}
 value_size=${VALUE_SIZE:-400}
 block_size=${BLOCK_SIZE:-8192}
 bloom_bits=${BLOOM_BITS:-10}
+stats_interval=${STATS_INTERVAL:-1000000}
 
 const_params="
   --db=$DB_DIR \
@@ -93,12 +94,14 @@ const_params="
   \
   --statistics=0 \
   --stats_per_interval=1 \
-  --stats_interval_seconds=60 \
+  --stats_interval=$stats_interval \
   --histogram=1 \
   \
   --memtablerep=skip_list \
   --bloom_bits=$bloom_bits \
   --open_files=-1"
+
+#  --stats_interval_seconds=60
 
 l0_config="
   --level0_file_num_compaction_trigger=4 \
@@ -187,6 +190,7 @@ function run_bulkload {
        --sync=0 \
        $params_bulkload \
        --threads=1 \
+	   --writes=$num_writes \
        --disable_wal=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/benchmark_bulkload_fillrandom.log"
@@ -205,22 +209,23 @@ function run_bulkload {
   eval $cmd
 }
 
-function run_bulkload_unique {
+function run_bulkload_add {
   # This runs with a vector memtable and the WAL disabled to load faster. It is still crash safe and the
   # client can discover where to restart a load after a crash. I think this is a good way to load.
   echo "Bulk loading $num_keys random keys"
-  cmd="./db_bench --benchmarks=filluniquerandom \
-       --use_existing_db=0 \
+  cmd="./db_bench --benchmarks=fillrandom \
+       --use_existing_db=1 \
        --disable_auto_compactions=1 \
        --sync=0 \
        $params_bulkload \
        --threads=1 \
+	   --writes=$num_writes \
        --disable_wal=1 \
        --seed=$( date +%s ) \
-       2>&1 | tee -a $output_dir/benchmark_bulkload_filluniquerandom.log"
-  echo $cmd | tee -a $output_dir/benchmark_bulkload_filluniquerandom.log
+       2>&1 | tee -a $output_dir/benchmark_bulkload_fillrandom_add.log"
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_fillrandom_add.log
   eval $cmd
-  summarize_result $output_dir/benchmark_bulkload_filluniquerandom.log bulkload filluniquerandom
+  summarize_result $output_dir/benchmark_bulkload_fillrandom_add.log bulkload_add fillrandom
   echo "Compacting..."
   cmd="./db_bench --benchmarks=compact \
        --use_existing_db=1 \
@@ -228,8 +233,36 @@ function run_bulkload_unique {
        --sync=0 \
        $params_w \
        --threads=1 \
-       2>&1 | tee -a $output_dir/benchmark_bulkload_compact.log"
-  echo $cmd | tee -a $output_dir/benchmark_bulkload_compact.log
+       2>&1 | tee -a $output_dir/benchmark_bulkload_add_compact.log"
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_add_compact.log
+  eval $cmd
+}
+
+function run_bulkload_unique {
+  # This runs with a vector memtable and the WAL disabled to load faster. It is still crash safe and the
+  # client can discover where to restart a load after a crash. I think this is a good way to load.
+  echo "Bulk loading $num_keys sequential all keys"
+  cmd="./db_bench --benchmarks=fillseq \
+       --use_existing_db=0 \
+       --disable_auto_compactions=1 \
+       --sync=0 \
+       $params_bulkload \
+       --threads=1 \
+       --disable_wal=1 \
+       --seed=$( date +%s ) \
+       2>&1 | tee -a $output_dir/benchmark_bulkload_fillseq.log"
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_fillseq.log
+  eval $cmd
+  summarize_result $output_dir/benchmark_bulkload_fillseq.log bulkload fillseq
+  echo "Compacting..."
+  cmd="./db_bench --benchmarks=compact \
+       --use_existing_db=1 \
+       --disable_auto_compactions=1 \
+       --sync=0 \
+       $params_w \
+       --threads=1 \
+       2>&1 | tee -a $output_dir/benchmark_bulkload_fillseq_compact.log"
+  echo $cmd | tee -a $output_dir/benchmark_bulkload_fillseq_compact.log
   eval $cmd
 }
 
@@ -349,6 +382,7 @@ function run_fillseq {
        $params_w \
        --min_level_to_compress=0 \
        --threads=1 \
+	   --writes=$num_writes \
        --disable_wal=$1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $log_file_name"
@@ -398,6 +432,7 @@ function run_fillrandom {
        --sync=0 \
        $params_w \
        --threads=1 \
+	   --writes=$num_writes \
        --seed=$( date +%s ) \
        --disable_wal=1 \
        2>&1 | tee -a $output_dir/benchmark_fillrandom.log"
@@ -577,6 +612,8 @@ for job in ${jobs[@]}; do
     run_bulkload
   elif [ $job = bulkload_unique ]; then
     run_bulkload_unique
+  elif [ $job = bulkload_add ]; then
+    run_bulkload_add
   elif [ $job = fillseq_disable_wal ]; then
     run_fillseq 1
   elif [ $job = fillseq_enable_wal ]; then
