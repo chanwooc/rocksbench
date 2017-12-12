@@ -61,6 +61,7 @@ value_size=${VALUE_SIZE:-400}
 block_size=${BLOCK_SIZE:-8192}
 bloom_bits=${BLOOM_BITS:-10}
 stats_interval=${STATS_INTERVAL:-1000000}
+read_percent=${READ_PERCENT:-90}
 
 const_params="
   --db=$DB_DIR \
@@ -464,7 +465,7 @@ function run_readrandomwriterandom {
        $params_w \
        --threads=$num_threads \
 	   --reads=$num_reads \
-	   --readwritepercent=90 \
+	   --readwritepercent=$read_percent \
        --disable_wal=1 \
        --seed=$( date +%s ) \
        2>&1 | tee -a $output_dir/${out_name}"
