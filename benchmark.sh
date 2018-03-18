@@ -73,7 +73,7 @@ const_params="
   --value_size=$value_size \
   --block_size=$block_size \
   --cache_size=$cache_size \
-  --cache_numshardbits=6 \
+  --cache_numshardbits=-1 \
   --compression_max_dict_bytes=$compression_max_dict_bytes \
   --compression_ratio=1.0 \
   --compression_type=$compression_type \
@@ -432,7 +432,7 @@ function run_fillrandom {
        --use_existing_db=0 \
        --sync=0 \
        $params_w \
-       --threads=1 \
+       --threads=$num_threads \
 	   --writes=$num_writes \
        --seed=$( date +%s ) \
        --disable_wal=1 \
@@ -455,6 +455,21 @@ function run_readrandom {
   echo $cmd | tee -a $output_dir/${out_name}
   eval $cmd
   summarize_result $output_dir/${out_name} readrandom.t${num_threads} readrandom
+}
+
+function run_readrandomfast {
+  echo "Reading $num_keys random keys"
+  out_name="benchmark_readrandomfast.t${num_threads}.log"
+  cmd="./db_bench --benchmarks=readrandomfast \
+       --use_existing_db=1 \
+       $params_w \
+       --threads=$num_threads \
+	   --reads=$num_reads \
+       --seed=$( date +%s ) \
+       2>&1 | tee -a $output_dir/${out_name}"
+  echo $cmd | tee -a $output_dir/${out_name}
+  eval $cmd
+  summarize_result $output_dir/${out_name} readrandomfast.t${num_threads} readrandomfast
 }
 
 function run_readrandomwriterandom {
@@ -631,6 +646,8 @@ for job in ${jobs[@]}; do
     run_fillrandom
   elif [ $job = readrandom ]; then
     run_readrandom
+  elif [ $job = readrandomfast ]; then
+    run_readrandomfast
   elif [ $job = readrandomwriterandom ]; then
     run_readrandomwriterandom
   elif [ $job = readseq ]; then
